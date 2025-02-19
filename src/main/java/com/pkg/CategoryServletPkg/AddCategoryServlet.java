@@ -1,11 +1,7 @@
 package com.pkg.CategoryServletPkg;
 
 import java.io.IOException;
-
-
-
-
-import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +9,11 @@ import com.pkg.POJO.Categories;
 import com.pkg.POJO.CategoryMap;
 import com.pkg.POJO.ContactDetails;
 import com.pkg.POJO.UserSessions;
-import com.pkg.sessionUtil.GetSessionIdFromCookie;
 import com.pkg.sessionUtil.UserSessionCache;
 
+import com.pkg.Filters.AuthFilter;
+
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -24,73 +22,57 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.pkg.Dao.CategoryDao;
 
-@WebServlet("/AddCategoryServlet")
+@WebServlet("/AddCategory")
 public class AddCategoryServlet extends HttpServlet {
 
+	private static final long serialVersionUID = 1L;
+
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
+
 		String categoryName = request.getParameter("categoryName");
-		
-		PrintWriter out = response.getWriter();
-		String sessionId = GetSessionIdFromCookie.getSessionIdFromCookie(request); 
+		String sessionId = AuthFilter.SESSION_ID.get();
 		UserSessions userSession = UserSessionCache.getSessionFromCache(sessionId);
-		int userId = userSession.getUserID();
+		int userId = userSession.getUserId();
 		String[] selectedContacts = request.getParameterValues("selectedContacts");
 
-		
 		Categories category = new Categories();
 		category.setCategoryName(categoryName);
-		category.setUserID(userId);
+		category.setUserId(userId);
+
+		List<ContactDetails> contacts = new ArrayList<>();
+		if (selectedContacts != null && selectedContacts.length > 0) {
+			for (String contactIdStr : selectedContacts) {
+				ContactDetails contact = new ContactDetails();
+				contact.setContactId(Integer.parseInt(contactIdStr));
+				contacts.add(contact);
+			}
+		}
 		
-        List<ContactDetails> contacts = new ArrayList<>();
-        if (selectedContacts != null) {
-            for (String contactIdStr : selectedContacts) {
-            	ContactDetails contact = new ContactDetails();
-                contact.setContactId(Integer.parseInt(contactIdStr));
-                contacts.add(contact); // Add contact to the list
-            }
-        }
-		try {
-			int categoryId = CategoryDao.addCategory(category);
-			if(categoryId > 0) {
-				category.setCategoryID(categoryId);
-				
-				
-				if(!contacts.isEmpty()) {
+			int categoryId = 0;
+			try {
+				categoryId = CategoryDao.addCategory(category);
+			} catch (SQLException | NamingException e) {
+				response.sendRedirect("categories.jsp?message=Something went wrong");
+			}
+			if (categoryId > 0) {
+				category.setCategoryId(categoryId);
+				if (!contacts.isEmpty()) {
 					for (ContactDetails contact : contacts) {
 						CategoryMap categoryMap = new CategoryMap();
-						categoryMap.setCategoryID(categoryId);
-						categoryMap.setContactID(contact.getContactId());
-                        CategoryDao.addContactToCategory( categoryMap);
-                    }
-					
+						categoryMap.setCategoryId(categoryId);
+						categoryMap.setContactId(contact.getContactId());
+						try {
+							CategoryDao.addContactToCategory(categoryMap);
+						} catch (SQLException | NamingException e) {
+							response.sendRedirect("categories.jsp?message=Something went wrong");
+						}
+					}
 				}
-				else {
-					
-					out.println("<script type='text/javascript'>");
-					out.println("alert('category added !');");
-					out.println("window.location.href = 'Categories.jsp';"); 
-					out.println("</script>");
-					return ;
-				}
-				out.println("<script type='text/javascript'>");
-				out.println("alert('category added with members!');");
-				out.println("window.location.href = 'Categories.jsp';"); 
-				out.println("</script>");
-				return ;
-				
 			}
-			else {
-				out.println("<script type='text/javascript'>");
-				out.println("alert('Oops ! Something went wrong.');");
-				out.println("window.location.href = 'Categories.jsp';"); 
-				out.println("</script>");
-				return ;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+			response.sendRedirect("categories.jsp");
+			return;
+		
 	}
-
 }
+
+

@@ -5,6 +5,14 @@
 <head>
 <meta charset="UTF-8">
 <title>Add Contacts</title>
+<script type="text/javascript">
+    	window.onload= function(){
+    		 const params = new URLSearchParams(window.location.search);
+             if (params.has("message")) {
+                 alert(params.get("message")); 
+             }
+    	};
+    </script>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -52,9 +60,7 @@
         align-self: center;
     }
     .dashboard-btn {
-        display: inline-block; /* Change to block to enable centering */
-        text-align: center;
-         /* Center text inside the button */
+        display: inline-block;
         padding: 10px 15px;
         border: none;
         background-color: #700ea8;
@@ -80,7 +86,7 @@
 <div class="container">
 	<h2>Create a New Contact</h2>
 	<h3>Add Details</h3>
-	<form action="AddContactServlet" method="post">
+	<form action="AddContact" method="post">
 		<label>Nick Name:*</label>
 		<input type="text" name="contact-name" required>
 		

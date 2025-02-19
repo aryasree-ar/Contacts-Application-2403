@@ -1,71 +1,70 @@
 package com.pkg.POJO;
 
-import java.util.HashMap;
-import java.util.Map;
 
+import java.util.Map;
+@Table("user_sessions")
 public class UserSessions extends DbPojo {
 	
-	private String sessionID;
-	private int userID;
-	private long session_creation_time;
-	private long last_access_time;
+	@Key
+	@Column("session_id")
+	private String sessionId;
+	@Key
+	@Column("user_id")
+	private int userId;
+	@Column("session_creation_time")
+	private long sessionCreationTime;
+	@Column("last_access_time")
+	private long lastAccessTime;
 	public UserSessions() {
 		
 	}
-	public UserSessions(String sessionID, int userID, long session_creation_time, long last_access_time) {
-		
-		this.sessionID = sessionID;
-		this.userID = userID;
-		this.session_creation_time = session_creation_time;
-		this.last_access_time = last_access_time;
+	public UserSessions(String sessionId, int userId, long sessionCreationTime, long lastAccessTime) {
+		this.sessionId = sessionId;
+		this.userId = userId;
+		this.sessionCreationTime = sessionCreationTime;
+		this.lastAccessTime = lastAccessTime;
 	}
 	
-	public String getSessionID() {
-		return sessionID;
+	public String getSessionId() {
+		return sessionId;
 	}
-	public void setSessionID(String sessionID) {
-		this.sessionID = sessionID;
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
 	}
-	public int getUserID() {
-		return userID;
+	public int getUserId() {
+		return userId;
 	}
-	public void setUserID(int userID) {
-		this.userID = userID;
+	public void setUserId(int userId) {
+		this.userId = userId;
 	}
-	public long getSession_creation_time() {
-		return session_creation_time;
+	public long getSessionCreationTime() {
+		return sessionCreationTime;
 	}
-	public void setSession_creation_time(long session_creation_time) {
-		this.session_creation_time = session_creation_time;
+	public void setSessionCreationTime(long sessionCreationTime) {
+		this.sessionCreationTime = sessionCreationTime;
 	}
-	public long getLast_access_time() {
-		return last_access_time;
+	public long getLastAccessTime() {
+		return lastAccessTime;
 	}
-	public void setLast_access_time(long last_access_time) {
-		this.last_access_time = last_access_time;
+	public void setLastAccessTime(long lastAccessTime) {
+		this.lastAccessTime = lastAccessTime;
 	}
 	@Override
 	public Map<String, Object> getColValMap(){
-		if(sessionID != null) {
-		columnClassMap.put("sessionID", sessionID);
+		if(sessionId != null) {
+		columnClassMap.put("session_id", sessionId);
 		}
-		if(userID != 0) {
-		columnClassMap.put("userID", userID);
+		if(userId != 0) {
+		columnClassMap.put("user_id", userId);
 		}
-		if(session_creation_time != 0L) {
-		columnClassMap.put("session_creation_time", session_creation_time);
+		if(sessionCreationTime != 0L) {
+		columnClassMap.put("session_creation_time", sessionCreationTime);
 		}
-		if(last_access_time != 0L) {
-		columnClassMap.put("last_access_time", last_access_time);
+		if(lastAccessTime != 0L) {
+		columnClassMap.put("last_access_time", lastAccessTime);
 		}
 		return columnClassMap;
 	}
 	
-	public Map<String, Object> getPrimaryKey(){
-    	Map<String, Object> primaryKey = new HashMap<>();
-    	if(sessionID != null || !(sessionID.isEmpty())) {
-    		primaryKey.put("sessionID", sessionID);
-    	}
-    	return primaryKey;
-    }
+
 }

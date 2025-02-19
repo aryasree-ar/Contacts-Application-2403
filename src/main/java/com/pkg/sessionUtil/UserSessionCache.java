@@ -10,15 +10,9 @@ import com.pkg.POJO.UserSessions;
 public class UserSessionCache {
 	private static Map<String, UserSessions> userSessionCache = new HashMap<>();
 	
-	//getting userId
-	public static int getUserIdFromSessionCache(String sessionId) {
-		int userId = userSessionCache.get(sessionId).getUserID();
-		return userId;
-	}
-	
 	//adding session
 	public static void addSessionToCache(UserSessions userSession) {
-		userSessionCache.put(userSession.getSessionID(), userSession);
+		userSessionCache.put(userSession.getSessionId(), userSession);
 	}
 	
 	//retrieving 

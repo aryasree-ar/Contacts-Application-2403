@@ -3,7 +3,7 @@ package com.pkg.sessionUtil;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-public class GetSessionIdFromCookie {
+public class SessionCookieUtil {
 	public static String getSessionIdFromCookie(HttpServletRequest request) {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {

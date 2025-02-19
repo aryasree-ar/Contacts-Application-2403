@@ -1,240 +1,191 @@
 package com.pkg.Dao;
 
 import java.sql.*;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.naming.NamingException;
 import org.mindrot.jbcrypt.BCrypt;
 
+import com.pkg.Exceptions.DBException;
+import com.pkg.Exceptions.InvalidInputException;
 import com.pkg.POJO.DbPojo;
 import com.pkg.POJO.User;
 import com.pkg.POJO.UserEmails;
 import com.pkg.POJO.UserDetails;
-import com.pkg.Util.DBConnection;
 import com.pkg.Util.PasswordUtil;
-import com.pkg.queryGenerator.QueryGenerator;
+import com.pkg.queryGenerator.QueryExecutor;
 
 public class UserDao {
-	static String query;
-	
-	//method to get user details by ID
-	public static User getUserById(int userId) {
-		query = "select * from userEmails where userID = ?";
-		List<UserEmails> userEmailsList = new ArrayList<>(); 
-		try(Connection c = DBConnection.connect();
-				PreparedStatement p = c.prepareStatement(query)){
-			p.setInt(1, userId);
-			ResultSet rs = p.executeQuery();
-			while(rs.next()) {
-				userEmailsList.add(new UserEmails(rs.getString("email"), rs.getInt("isPrimary")));
-			}
-			
-			String userQuery = "select * from userLoginDetails where userID = ?";
-			try (PreparedStatement p2 = c.prepareStatement(userQuery)) {
-	            p2.setInt(1, userId);
-	            ResultSet rs1 = p2.executeQuery();
-	            if (rs1.next()) {
-	                User user = new User();
-	                user.setUserId(rs1.getInt("userID"));
-	                user.setUserName(rs1.getString("user_name")); // Ensure the case matches
-	                user.setUserFirstName(rs1.getString("first_name"));
-	                user.setUserLastName(rs1.getString("last_name"));
-	                user.setUserPhone(rs1.getString("phone_number"));
-	                user.setUserDOB(rs1.getString("dob"));
-	                user.setUserLocation(rs1.getString("location"));
-	                user.setUserMails(userEmailsList);
-	                
-	                return user;
-	            }
-	        }
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-			
-		} catch (Exception e) {
-			e.printStackTrace();
+
+	public static User getUserById(int userId) throws InvalidInputException, DBException {
+		if (userId <= 0) {
+			throw new InvalidInputException("Invalide user credentials. Please try again.");
 		}
-		
-		return null;
+		QueryExecutor queryExecutorObject = new QueryExecutor();
+		UserDetails userDetails = new UserDetails();
+		userDetails.setUserId(userId);
+		List<DbPojo> userDetailsObjectList = queryExecutorObject.executeSelect(userDetails);
+		if (userDetailsObjectList == null || userDetailsObjectList.isEmpty()) {
+			throw new InvalidInputException("No user found with the given credentials");
+		}
+
+		UserEmails userEmailObject = new UserEmails();
+		userEmailObject.setUserId(userId);
+		List<UserEmails> userEmailList = queryExecutorObject.executeSelect(userEmailObject).stream()
+				.filter(UserEmails.class::isInstance).map(UserEmails.class::cast).toList();
+		if (userEmailList == null || userEmailList.isEmpty()) {
+			throw new InvalidInputException("User must have atleast one email.");
+		}
+		User userObject = new User();
+
+		UserDetails userDetailsObject = (UserDetails) userDetailsObjectList.get(0);
+		userObject.setUserId(userDetailsObject.getUserId());
+		userObject.setUserName(userDetailsObject.getUserName());
+		userObject.setUserFirstName(userDetailsObject.getFirstName());
+		userObject.setUserLastName(userDetailsObject.getLastName());
+		userObject.setUserPhone(userDetailsObject.getPhoneNumber());
+		userObject.setUserDOB(userDetailsObject.getDob());
+		userObject.setUserLocation(userDetailsObject.getLocation());
+		userObject.setUserMails(new ArrayList<>(userEmailList));
+		return userObject;
 	}
-	
-	//to check duplicate email
-	public static boolean checkDuplicateMail(String mail) throws SQLException, NamingException {
-		
-//		query = "select email from userEmails where email = ?";
-//		try (Connection c = DBConnection.connect();
-//			PreparedStatement p = c.prepareStatement(query)){
-//			
-//			
-//			p.setString(1, mail);
-//			ResultSet rs = p.executeQuery();
-//			//check if there is a duplicate mail
-//			return rs.next();
-//			
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-		
-		System.out.println("checking for duplicate mail");
-		QueryGenerator queryGenerator = new QueryGenerator();
-		UserEmails obj = new UserEmails();
-		obj.setEmail(mail);
-		List<DbPojo> resultSet = queryGenerator.select(obj);
-		System.out.println(resultSet.size());
+
+	public static boolean checkDuplicateMail(String mail) throws InvalidInputException, SQLException, NamingException, DBException {
+		if (mail == null || mail.trim().isEmpty()) {
+			throw new InvalidInputException("Email cannot be empty.");
+		}
+		QueryExecutor queryExecutorObject = new QueryExecutor();
+		UserEmails userEmailsObject = new UserEmails();
+		userEmailsObject.setEmail(mail);
+		List<DbPojo> resultSet = queryExecutorObject.executeSelect(userEmailsObject);
 		return resultSet.size() > 0;
-		
 	}
-	
-	//to insert signUp details and return userId
-	public static int insertUserDetails(User user,int hashCode) {
 
-		try {
-			UserDetails userObject = new UserDetails(user.getUserId(), user.getUserName(), user.getUserPassword(), user.getUserFirstName(), user.getUserLastName(), user.getUserPhone(), user.getUserDOB(), user.getUserLocation(), hashCode);
-			QueryGenerator queryGenerator = new QueryGenerator();
-			int userId = queryGenerator.insert(userObject);
-			List<UserEmails> userEmailsList = user.getUserMails();
-			
-			try {
-				UserEmails userEmail = new UserEmails(userEmailsList.get(0).getEmail(), 1);
-				userEmail.setUserId(userId);
-				QueryGenerator queryGenerator2 = new QueryGenerator();
-				if(queryGenerator2.insert(userEmail) > 0) {
-					return userId;
-				}
-				return userId;
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		} 
-		catch (Exception e) {
-			e.printStackTrace();
+	public static int insertUserDetails(User user, int hashCode) throws InvalidInputException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, DBException  {
+		if (user == null) {
+			throw new InvalidInputException("Something went worng! Please try again.");
 		}
-		
-		return -1;
-	}
-	
-	//login logic
-	public static int loginUser(String userMail, String password) {
-		query = "select * from userLoginDetails ld left join userEmails um on ld.userID = um.userID where email=?";
-		try (Connection c = DBConnection.connect();
-	             PreparedStatement p = c.prepareStatement(query)) {
-			p.setString(1, userMail);
-			ResultSet rs = p.executeQuery();
-			if (rs.next()) {
-				int userId = rs.getInt("userID");
-				String hashedPassword = rs.getString("password");
-				int hashCode = rs.getInt("hash_code");
-				//BCrypt.checkpw(password, hashedPassword)
-				if (hashCode == 0) {
-					if (BCrypt.checkpw(password, hashedPassword)) {
-						 String newHashedPassword = PasswordUtil.hashPassword(password);
-					     updateUserPassword(userId, newHashedPassword, 1); 
-					     return userId;
-	                }
-				}
-				else {
-					 if (PasswordUtil.checkPassword(password, hashedPassword)) {
-		                    return userId;
-		                }
-				}
-				return -1;
-			}
-			else {
-				return -2;
-			}
-			
+		UserDetails userObject = new UserDetails(user.getUserId(), user.getUserName(), user.getUserPassword(),
+				user.getUserFirstName(), user.getUserLastName(), user.getUserPhone(), user.getUserDOB(),
+				user.getUserLocation(), hashCode);
+		QueryExecutor queryExecutorObject = new QueryExecutor();
+		int userId = queryExecutorObject.executeInsert(userObject, true);
+
+		if (user.getUserMails() == null || user.getUserMails().isEmpty()) {
+			throw new InvalidInputException("User must have atleast one email.");
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		List<UserEmails> userEmailsList = user.getUserMails();
+		UserEmails userEmail = new UserEmails(userEmailsList.get(0).getEmail(), 1);
+		userEmail.setUserId(userId);
+		if (queryExecutorObject.executeInsert(userEmail, false) <= 0) {
+			throw new DBException("Oops! That did not work.");
 		}
-		return 0;
-	}
-	
-	//to update the scrypt passwords
-	public static void updateUserPassword(int userId, String newHashedPassword , int hashCode) {
-
-	    UserDetails user = new UserDetails();
-	    user.setPassword(newHashedPassword);
-	    user.setHash_code(hashCode);
-	    user.setUserID(userId);
-	    
-	    UserDetails u = new UserDetails();
-	    u.setUserID(userId);
-	    
-	    QueryGenerator qg = new QueryGenerator();
-	    int result = qg.update(user,u);
-	   
-	    
+		return userId;
 	}
 
-	// to add mails in the profile 
-	public static boolean addUserEmail(int userId, String mailId) throws ClassNotFoundException, SQLException, NamingException {
+	public static int loginUser(String userMail, String password) throws InvalidInputException, DBException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException  {
+		QueryExecutor queryExecutorObject = new QueryExecutor();
+		UserEmails userEmailsObject = new UserEmails();
+		userEmailsObject.setEmail(userMail);
 
-		boolean result = false;
+		List<UserEmails> userEmailsList = queryExecutorObject.executeSelect(userEmailsObject).stream()
+				.filter(UserEmails.class::isInstance).map(UserEmails.class::cast).toList();
+
+		if (userEmailsList == null || userEmailsList.isEmpty()) {
+			throw new InvalidInputException("No account found with this email.");
+		}
+
+		int userId = userEmailsList.get(0).getUserId();
+		UserDetails user = new UserDetails();
+		user.setUserId(userId);
+
+		UserDetails userDetails = queryExecutorObject.executeSelect(user).stream().filter(UserDetails.class::isInstance)
+				.map(UserDetails.class::cast).toList().get(0);
+
+		String hashedPassword = userDetails.getPassword();
+		int passwordVersion = userDetails.getPasswordVersion();
+
+		if (passwordVersion == 0) {
+			if (!BCrypt.checkpw(password, hashedPassword)) {
+				throw new InvalidInputException("Incorrect password");
+			}
+			String newHashedPassword = PasswordUtil.hashPassword(password);
+			updateUserPassword(userId, newHashedPassword, 1);
+		} else {
+			if (!PasswordUtil.checkPassword(password, hashedPassword)) {
+				throw new InvalidInputException("Incorrect password");
+			}
+		}
+		return userId;
+	}
+
+	public static void updateUserPassword(int userId, String newHashedPassword, int hashCode) throws InvalidInputException, DBException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException  {
+		if (userId <= 0) {
+			throw new InvalidInputException("Invalid user. Please try again.");
+		}
+		if (newHashedPassword == null || newHashedPassword.isEmpty()) {
+			throw new InvalidInputException("Password cannot be empty.");
+		}
+		UserDetails user = new UserDetails();
+		user.setPassword(newHashedPassword);
+		user.setPasswordVersion(hashCode);
+		user.setUserId(userId);
+		QueryExecutor queryExecutorObject = new QueryExecutor();
+		if (queryExecutorObject.executeUpdate(user) < 1) {
+			throw new DBException("Oops! That did not work. Please try again.");
+		}
+	}
+
+	public static boolean addUserEmail(int userId, String mailId) throws InvalidInputException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, DBException {
+		if (userId <= 0 || mailId == null || mailId.isEmpty()) {
+			throw new InvalidInputException("Invalid email credentials.");
+		}
 		UserEmails userEmailsObject = new UserEmails(mailId, 0);
 		userEmailsObject.setUserId(userId);
-		try {
-			QueryGenerator queryGenerator = new QueryGenerator();
-			if(queryGenerator != null) {
-			result = queryGenerator.insert(userEmailsObject) > 0;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		QueryExecutor queryExecutorObject = new QueryExecutor();
+		if (queryExecutorObject.executeInsert(userEmailsObject, false) <= 0) {
+			throw new DBException("Oops! That did not work. Please try again.");
 		}
-		return result;
+		return true;
+	}
 
-	}
-	
-	public static void deleteUser(int userId) throws IllegalArgumentException, IllegalAccessException {
-		User user = getUserById(userId);
-		if(user!=null) {
-			QueryGenerator queryGenerator = new QueryGenerator();
-			UserDetails delObj = new UserDetails();
-			delObj.setUserID(userId);
-			queryGenerator.delete(delObj);
+	public static boolean deleteUserEmail(int userId, String email) throws InvalidInputException, DBException  {
+		if (userId <= 0 || email == null || email.isEmpty()) {
+			throw new InvalidInputException("Invalid email credentials. Please try again.");
 		}
-	}
-	
-	// to delete user mails
-	public static boolean deleteUserEmail(int userId,String email) throws IllegalArgumentException, IllegalAccessException {
 		UserEmails userEmail = new UserEmails();
 		userEmail.setEmail(email);
 		userEmail.setUserId(userId);
-		if(userEmail != null) {
-			QueryGenerator queryGenerator = new QueryGenerator();
-			if(queryGenerator.delete(userEmail) > 0) return true;
-		}
-		
-		
 
-		return false;
-		
-		
+		QueryExecutor queryExecutorObject = new QueryExecutor();
+		if (queryExecutorObject.executeDelete(userEmail) <= 0) {
+			throw new DBException("Oops ! That did not work. Please try again.");
+		}
+		return true;
+
 	}
-	
-	//to set primary mail
-	public static boolean setPrimaryEmail(int userId, String email) {
-		int result= 0;
-		
-		QueryGenerator queryGenerator = new QueryGenerator();
-		
+
+	public static boolean setPrimaryEmail(int userId, String email) throws InvalidInputException, DBException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException  {
+		if (userId <= 0 || email == null || email.isEmpty()) {
+			throw new InvalidInputException("Invalid email credentials. Please try again.");
+		}
+
+		QueryExecutor queryExecutorObject = new QueryExecutor();
 		UserEmails u1 = new UserEmails();
-		UserEmails conditionObj1 = new UserEmails();
-		
+
 		u1.setIsPrimary(0);
-		conditionObj1.setUserId(userId);
-		conditionObj1.setIsPrimary(1);
-		result = queryGenerator.update(u1, conditionObj1);
-		
+		u1.setUserId(userId);
+		u1.setEmail(getUserById(userId).getPrimaryMail().getEmail());
+		if (queryExecutorObject.executeUpdate(u1) <= 0) {
+			throw new DBException("Oops! That did not work. Please try again.");
+		}
+
 		u1.setIsPrimary(1);
-		UserEmails conditionObj2 = new UserEmails();
-		conditionObj2.setUserId(userId);
-		conditionObj2.setEmail(email);
-		result = queryGenerator.update(u1, conditionObj2);
-		
-		return result > 0;
+		u1.setEmail(email);
+		if (queryExecutorObject.executeUpdate(u1) <= 0) {
+			throw new DBException("Oops! That did not work. Please try again.");
+		}
+		return true;
 	}
-	
+
 }

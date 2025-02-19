@@ -1,42 +1,68 @@
 package com.pkg.POJO;
 
 import java.util.Map;
-
+@Table("category_map")
 public class CategoryMap extends DbPojo {
-	private int categoryID ;
-	private int contactID;
+	@Key
+	@Column("category_id")
+	private int categoryId ;
+	@Key
+	@Column("contact_id")
+	private int contactId;
+	@Column("created_at")
+	private Long createdAt;
+	@Column("modified_at")
+	private Long modifiedAt;
 
 	public CategoryMap() {
 		
 	}
 
-	public CategoryMap(int categoryID, int contactID) {
-		this.categoryID = categoryID;
-		this.contactID = contactID;
+	public Integer getCategoryId() {
+		return categoryId;
 	}
 
-	public Integer getCategoryID() {
-		return categoryID;
+	public void setCategoryId(int categoryId) {
+		this.categoryId = categoryId;
 	}
 
-	public void setCategoryID(int categoryID) {
-		this.categoryID = categoryID;
+	public int getContactId() {
+		return contactId;
 	}
 
-	public int getContactID() {
-		return contactID;
+	public void setContactId(int contactId) {
+		this.contactId = contactId;
+	}
+	
+	public long getCreatedAt() {
+		return createdAt;
 	}
 
-	public void setContactID(int contactID) {
-		this.contactID = contactID;
+	public void setCreatedAt(long createdAt) {
+		this.createdAt = createdAt;
 	}
+
+	public long getModifiedAt() {
+		return modifiedAt;
+	}
+
+	public void setModifiedAt(long modifiedAt) {
+		this.modifiedAt = modifiedAt;
+	}
+
 	@Override
 	public Map<String, Object> getColValMap(){
-		if(categoryID != 0) {
-		columnClassMap.put("categoryID", categoryID);
+		if(categoryId != 0) {
+		columnClassMap.put("category_id", categoryId);
 		}
-		if(contactID != 0) {
-		columnClassMap.put("contactID", contactID);
+		if(contactId != 0) {
+		columnClassMap.put("contact_id", contactId);
+		}
+		if (createdAt != null) {
+			columnClassMap.put("created_at", createdAt);
+		}
+		if (modifiedAt != null) {
+			columnClassMap.put("modified_at", modifiedAt);
 		}
 		return columnClassMap;
 	}

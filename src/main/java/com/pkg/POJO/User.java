@@ -3,7 +3,11 @@ package com.pkg.POJO;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.pkg.Exceptions.InvalidInputException;
+import com.pkg.Util.InputValidator;
+
 public class User {
+	
 	private int userId;
 	private String userName;
 	private String userPassword;
@@ -12,17 +16,27 @@ public class User {
 	private String userPhone;
 	private String userDOB;
 	private String userLocation;
+	private Long createdAt;
+	private Long modifiedAt;
 	private List<UserEmails> userEmails = new ArrayList<>();
-	//private List<contacts> userContacts = 
-	//userID
+	public UserEmails getPrimaryMail() {
+		for(UserEmails userEmail: userEmails) {
+			if(userEmail.getIsPrimary() == 1) {
+				return userEmail;
+			}
+		}
+		return null;
+	}
 	public int getUserId() {
 		return userId;
 	}
-	public void setUserId(int userId) {
+	public void setUserId(int userId) throws InvalidInputException {
+		if (userId < 0) {
+			throw new InvalidInputException("User ID cannot be negative.");
+		}
 		this.userId = userId;
 	}
 	
-	//userEmail
 	public List<UserEmails> getUserMails() {
 		return userEmails;
 	}
@@ -30,15 +44,14 @@ public class User {
 		this.userEmails = userEmails;
 	}
 	
-	//userName
 	public String getUserName() {
 		return userName;
 	}
-	public void setUserName(String userName) {
+	public void setUserName(String userName) throws InvalidInputException {
+		InputValidator.validateSafeString(userName,"user_name");
 		this.userName = userName;
 	}
 	
-	//password
 	public String getUserPassword() {
 		return userPassword;
 	}
@@ -46,44 +59,58 @@ public class User {
 		this.userPassword = userPassword;
 	}
 	
-	//userFirstName
 	public String getUserFirstName() {
 		return userFirstName;
 	}
-	public void setUserFirstName(String userFirstName) {
+	public void setUserFirstName(String userFirstName) throws InvalidInputException {
+		InputValidator.validateSafeString(userFirstName, "first_name");
 		this.userFirstName = userFirstName;
 	}
 	
-	//userLastName
 	public String getUserLastName() {
 		return userLastName;
 	}
-	public void setUserLastName(String userLastName) {
+	public void setUserLastName(String userLastName) throws InvalidInputException {
+		InputValidator.validateSafeString(userLastName,"last_name");
 		this.userLastName = userLastName;
 	}
 	
-	//userPhone
 	public String getUserPhone() {
 		return userPhone;
 	}
-	public void setUserPhone(String userPhone) {
+	public void setUserPhone(String userPhone) throws InvalidInputException {
+		InputValidator.validatePhoneNumber(userPhone);
 		this.userPhone = userPhone;
 	}
 	
-	//userDOB
 	public String getUserDOB() {
 		return userDOB;
 	}
-	public void setUserDOB(String userDOB) {
+	public void setUserDOB(String userDOB) throws InvalidInputException {
+		InputValidator.validateDate(userDOB);
 		this.userDOB = userDOB;
 	}
 	
-	//userLocation
 	public String getUserLocation() {
 		return userLocation;
 	}
-	public void setUserLocation(String userLocation) {
+	public void setUserLocation(String userLocation) throws InvalidInputException {
+		InputValidator.validateSafeString(userLocation, "location");
 		this.userLocation = userLocation;
+	}
+	
+	public long getCreatedAt() {
+		return createdAt;
+	}
+	public void setCreatedAt(long createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public long getModifiedAt() {
+		return modifiedAt;
+	}
+	public void setModifiedAt(long modifiedAt) {
+		this.modifiedAt = modifiedAt;
 	}
 	
 	

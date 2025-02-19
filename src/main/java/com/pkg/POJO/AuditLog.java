@@ -1,36 +1,50 @@
 package com.pkg.POJO;
 
-public class AuditLog {
-	private long audit_id;
-	private String table_name;
-	private String old_value;
-	private String new_value;
+import java.util.Map;
+@Table("audit_log")
+public class AuditLog extends DbPojo{
+	@Column("audit_log")
+	private Long auditId;
+	@Column("table_name")
+	private String tableName;
+	@Column("old_value")
+	private String oldValue;
+	@Column("new_value")
+	private String newValue;
+	@Column("operation")
 	private String operation;
-	private long timestamp;
-	private String modified_by;
-	public long getAudit_id() {
-		return audit_id;
+	@Column("timestamp")
+	private Long timestamp;
+	@Column("modified_by")
+	private String modifiedBy;
+	@Column("session_id")
+	private String sessionId;
+	@Column("uri")
+	private String uri;
+	
+	public long getAuditId() {
+		return auditId;
 	}
-	public void setAudit_id(long audit_id) {
-		this.audit_id = audit_id;
+	public void setAuditId(long auditId) {
+		this.auditId = auditId;
 	}
-	public String getTable_name() {
-		return table_name;
+	public String getTableName() {
+		return tableName;
 	}
-	public void setTable_name(String table_name) {
-		this.table_name = table_name;
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
 	}
-	public String getOld_value() {
-		return old_value;
+	public String getOldValue() {
+		return oldValue;
 	}
-	public void setOld_value(String old_value) {
-		this.old_value = old_value;
+	public void setOldValue(String oldValue) {
+		this.oldValue = oldValue;
 	}
-	public String getNew_value() {
-		return new_value;
+	public String getNewValue() {
+		return newValue;
 	}
-	public void setNew_value(String new_value) {
-		this.new_value = new_value;
+	public void setNewValue(String newValue) {
+		this.newValue = newValue;
 	}
 	public String getOperation() {
 		return operation;
@@ -44,11 +58,55 @@ public class AuditLog {
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
-	public String getModified_by() {
-		return modified_by;
+	public String getModifiedBy() {
+		return modifiedBy;
 	}
-	public void setModified_by(String modified_by) {
-		this.modified_by = modified_by;
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+	public String getSessionId() {
+		return sessionId;
+	}
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
+	}
+	public String getUri() {
+		return uri;
+	}
+	public void setUri(String uri) {
+		this.uri = uri;
+	}
+	
+	@Override
+	public Map<String,Object> getColValMap(){
+		if(auditId != null) {
+			columnClassMap.put("audit_id", auditId);
+		}
+		if(tableName != null) {
+			columnClassMap.put("table_name", tableName);
+		}
+		if(oldValue != null) {
+			columnClassMap.put("old_value", oldValue);
+		}
+		if(newValue != null) {
+			columnClassMap.put("new_value", newValue);
+		}
+		if(operation != null) {
+			columnClassMap.put("operation", operation);
+		}
+		if(timestamp != null) {
+			columnClassMap.put("timestamp", timestamp);
+		}
+		if(modifiedBy != null) {
+			columnClassMap.put("modified_by", modifiedBy);
+		}
+		if(sessionId != null) {
+			columnClassMap.put("session_id", sessionId);
+		}
+		if(uri != null) {
+			columnClassMap.put("uri", uri);
+		}
+		return columnClassMap;
 	}
 	
 }

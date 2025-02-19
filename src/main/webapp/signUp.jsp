@@ -7,6 +7,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
+    <script type="text/javascript">
+    	window.onload= function(){
+    		 const params = new URLSearchParams(window.location.search);
+             if (params.has("message")) {
+                 alert(params.get("message")); 
+             }
+    	};
+    </script>
     <style>
         body, h2, p, label, input, button, form {
             margin: 0;
@@ -26,7 +34,6 @@
             padding: 20px;
         }
 
-        /* Form container */
         .signup-container {
             background-color: #fff;
             padding: 20px 30px;
@@ -36,7 +43,6 @@
             max-width: 400px;
         }
 
-        /* Form title */
         h2 {
             text-align: center;
             margin-bottom: 20px;
@@ -54,6 +60,10 @@
             
             color: #555;
         }
+        
+        input::placeholder {
+    		font-size: 12px; 
+		}
 
         input {
             padding: 10px;
@@ -80,7 +90,7 @@
         }
 
         button:hover {
-            background-color: #c471f5;
+            background-color: #420864;
         }
 
         /* Link styling */
@@ -107,28 +117,28 @@
         <h2>Sign Up</h2>
         <form action="SignUpServlet" method="post">
             <label for="SignUpEmail">Email:*</label>
-            <input type="email" name="sign-up-email" id="se" required>
+            <input type="email" name="sign-up-email" id="se" placeholder="Enter your Email" required>
 
-            <label for="SignUpName">Name:</label>
-            <input type="text" name="sign-up-name" id="sn" >
+            <label for="SignUpName">Name:*</label>
+            <input type="text" name="sign-up-name" id="sn" placeholder="Enter your Name" required>
 
             <label for="SignUpPassword">Password:*</label>
-            <input type="password" name="sign-up-password" id="spw" required>
-
+            <input type="password" name="sign-up-password" id="spw" placeholder="Enter your password" required>
+            
             <label for="SignUpFirstName">First Name:</label>
-            <input type="text" name="sign-up-frist-name" id="sfn" >
+            <input type="text" name="sign-up-frist-name" id="sfn" placeholder="Enter your first name">
 
             <label for="SignUpLastName">Last Name:</label>
-            <input type="text" name="sign-up-last-name" id="sln">
+            <input type="text" name="sign-up-last-name" id="sln" placeholder="Enter your last name">
 
             <label for="SignUpPhoneNumber">Phone Number:</label>
-            <input type="text" name="sign-up-phone-number" id="spn">
+            <input type="text" name="sign-up-phone-number" id="spn" placeholder="Enter your phone number">
 
             <label for="SignUpDob">Date of Birth:</label>
-            <input type="date" name="sign-up-dob" id="sdob">
+            <input type="date" name="sign-up-dob" id="sdob" placeholder="Enter your DOB">
 
             <label for="SignUpLocation">Location:</label>
-            <input type="text" name="sign-up-location" id="sl">
+            <input type="text" name="sign-up-location" id="sl" placeholder="Enter your Location">
 
             <button type="submit">Sign up</button>
         </form>

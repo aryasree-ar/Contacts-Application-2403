@@ -1,50 +1,43 @@
 package com.pkg.UserServletPkg;
 
 import java.io.IOException;
-
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import com.pkg.Dao.SessionDao;
-import com.pkg.sessionUtil.GetSessionIdFromCookie;
+import com.pkg.Exceptions.DBException;
+import com.pkg.Exceptions.InvalidInputException;
 import com.pkg.sessionUtil.UserSessionCache;
-
+import com.pkg.Filters.AuthFilter;
 
 @WebServlet("/LogOut")
 public class LogOut extends HttpServlet {
-	
-	public void service(HttpServletRequest req, HttpServletResponse res) throws IOException {
-		//Cookie[] cookies = req.getCookies();
-		String sessionId = GetSessionIdFromCookie.getSessionIdFromCookie(req);
-//		if(cookies != null) {
-//			for(Cookie cookie : cookies) {
-//				if("SESSION_ID".equals(cookie.getName())) {
-//					sessionId = cookie.getName();
-//					break;
-//				}
-//			}
-//		}
-		
-		if(sessionId != null) {
-			//remove session from db and cache
+
+	private static final long serialVersionUID = 1L;
+
+	public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String sessionId = AuthFilter.SESSION_ID.get();
+		if (sessionId != null) {
+			// remove session from db and cache
 			UserSessionCache.removeSessionFromCache(sessionId);
 			try {
 				SessionDao.deleteSessionById(sessionId);
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (IllegalArgumentException | IllegalAccessException | NullPointerException | InvalidInputException e) {
+				response.sendRedirect("dashboard.jsp?message=An internal error occured.");
+			} catch (DBException e) {
+				response.sendRedirect("dashboard.jsp?message="+e.getMessage());
 			}
-			//remove session cookie
+			// remove session cookie
 			Cookie sessionCookie = new Cookie("SESSION_ID", "");
-            sessionCookie.setMaxAge(0);
-            res.addCookie(sessionCookie);
+			sessionCookie.setMaxAge(0);
+			response.addCookie(sessionCookie);
+
+		} else {
+			response.sendRedirect("dashboard.jsp?message=Oops! That did not work. Please try again.");
 		}
-		res.sendRedirect("index.jsp");
+		response.sendRedirect("index.jsp");
 	}
 
 }

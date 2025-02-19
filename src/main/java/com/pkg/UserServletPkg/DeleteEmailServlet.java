@@ -2,52 +2,47 @@ package com.pkg.UserServletPkg;
 
 import java.io.IOException;
 
-
-import java.io.PrintWriter;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import com.pkg.Dao.UserDao;
+import com.pkg.Exceptions.DBException;
+import com.pkg.Exceptions.InvalidInputException;
 import com.pkg.POJO.User;
-//import com.pkg.Util.ObjectHash;
 import com.pkg.POJO.UserSessions;
-import com.pkg.sessionUtil.GetSessionIdFromCookie;
 import com.pkg.sessionUtil.UserSessionCache;
+import com.pkg.Filters.AuthFilter;
 
-@WebServlet("/DeleteEmailServlet")
+@WebServlet("/DeleteEmail")
 public class DeleteEmailServlet extends HttpServlet {
-	
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
-		String sessionId = GetSessionIdFromCookie.getSessionIdFromCookie(request); 
+
+	private static final long serialVersionUID = 1L;
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		String sessionId = AuthFilter.SESSION_ID.get();
 		UserSessions userSession = UserSessionCache.getSessionFromCache(sessionId);
-		int userId = userSession.getUserID();
-		
+		int userId = userSession.getUserId();
 		String email = request.getParameter("email");
-		PrintWriter out = response.getWriter();
-		
 		try {
-			if(UserDao.deleteUserEmail(userId, email)) {
+			if (UserDao.deleteUserEmail(userId, email)) {
 				User user = UserDao.getUserById(userId);
-				if(user != null) {
+				if (user != null) {
 					user.getUserMails().removeIf(e -> e.getEmail().equals(email));
 				}
-				response.sendRedirect("Profile.jsp");
+				response.sendRedirect("profile.jsp");
+			} else {
+				response.sendRedirect("profile.jsp?message=Oops! That did not work. Try again.");
 			}
-			else {
-				out.println("<script type='text/javascript'>");
-				out.println("alert('Try Again !');");
-				out.println("window.location.href = 'Profile.jsp';");
-				out.println("</script>");
-			}
-		} catch (IllegalArgumentException | IllegalAccessException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (InvalidInputException e) {
+			response.sendRedirect("profile.jsp?message=" + e.getMessage());
+		} catch (IllegalArgumentException | IOException e) {
+			response.sendRedirect("profile.jsp?message=An internal error occured. Please try again.");
+		} catch (DBException e) {
+			response.sendRedirect("profile.jsp?message=" + e.getMessage());
 		}
 	}
 

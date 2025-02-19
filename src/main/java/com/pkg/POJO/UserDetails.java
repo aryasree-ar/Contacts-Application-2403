@@ -1,133 +1,189 @@
 package com.pkg.POJO;
 
-import java.util.HashMap;
 import java.util.Map;
 
+import com.pkg.Exceptions.InvalidInputException;
+import com.pkg.Util.InputValidator;
+
+@Table("user_details")
 public class UserDetails extends DbPojo {
 	
-	private int userID;
-	private String user_name;
+	@Key
+	@Column("user_id")
+	private int userId;
+	@Column("user_name")
+	private String userName;
+	@Column("password")
 	private String password;
-	private String first_name;
-	private String last_name;
-	private String phone_number;
+	@Column("first_name")
+	private String firstName;
+	@Column("last_name")
+	private String lastName;
+	@Column("phone_number")
+	private String phoneNumber;
+	@Column("dob")
 	private String dob;
+	@Column("location")
 	private String location;
-	private Integer hash_code;
-	
+	@Column("password_version")
+	private Integer passwordVersion;
+	@Column("created_at")
+	private Long createdAt;
+	@Column("modified_at")
+	private Long modifiedAt;
+
 	public UserDetails() {
-		
+
 	}
-	
-	public UserDetails(int userID, String user_name, String password, String first_name, String last_name,
-			String phone_number, String dob, String location, int hash_code) {
-		
-		this.userID = userID;
-		this.user_name = user_name;
+
+	public UserDetails(int userId, String userName, String password, String firstName, String lastName,
+			String phoneNumber, String dob, String location, int passwordVersion) {
+
+		this.userId = userId;
+		this.userName = userName;
 		this.password = password;
-		this.first_name = first_name;
-		this.last_name = last_name;
-		this.phone_number = phone_number;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.phoneNumber = phoneNumber;
 		this.dob = dob;
 		this.location = location;
-		this.hash_code = hash_code;
+		this.passwordVersion = passwordVersion;
 	}
-	
-	public int getUserID() {
-		return userID;
+
+	public int getUserId() {
+		return userId;
 	}
-	public void setUserID(int userID) {
-		this.userID = userID;
+
+	public void setUserId(int userId) throws InvalidInputException {
+		if (userId < 0) {
+			throw new InvalidInputException("User ID cannot be negative.");
+		}
+		this.userId = userId;
 	}
-	public String getUser_name() {
-		return user_name;
+
+	public String getUserName() {
+		return userName;
 	}
-	public void setUser_name(String user_name) {
-		this.user_name = user_name;
+
+	public void setUserName(String userName) throws InvalidInputException {
+		InputValidator.validateSafeString(userName,"user_name");
+		this.userName = userName.trim();
 	}
+
 	public String getPassword() {
 		return password;
 	}
+
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	public String getFirst_name() {
-		return first_name;
+
+	public String getFirstName() {
+		return firstName;
 	}
-	public void setFirst_name(String first_name) {
-		this.first_name = first_name;
+
+	public void setFirstName(String firstName) throws InvalidInputException {
+		InputValidator.validateSafeString(firstName, "first_name");
+		this.firstName = firstName.trim();
 	}
-	public String getLast_name() {
-		return last_name;
+
+	public String getLastName() {
+		return lastName;
 	}
-	public void setLast_name(String last_name) {
-		this.last_name = last_name;
+
+	public void setLastName(String lastName) throws InvalidInputException{
+		InputValidator.validateSafeString(lastName,"last_name");
+		this.lastName = lastName;
 	}
-	public String getPhone_number() {
-		return phone_number;
+
+	public String getPhoneNumber() {
+		return phoneNumber;
 	}
-	public void setPhone_number(String phone_number) {
-		this.phone_number = phone_number;
+
+	public void setPhoneNumber(String phoneNumber) throws InvalidInputException{
+		InputValidator.validatePhoneNumber(phoneNumber);
+		this.phoneNumber = phoneNumber;
 	}
+
 	public String getDob() {
 		return dob;
 	}
-	public void setDob(String dob) {
+
+	public void setDob(String dob) throws InvalidInputException{
+		InputValidator.validateDate(dob);
 		this.dob = dob;
 	}
+
 	public String getLocation() {
 		return location;
 	}
-	public void setLocation(String location) {
+
+	public void setLocation(String location) throws InvalidInputException{
+		InputValidator.validateSafeString(location, "location");
 		this.location = location;
 	}
-	public int getHash_code() {
-		return hash_code;
+
+	public int getPasswordVersion() {
+		return passwordVersion;
 	}
-	public void setHash_code(int hash_code) {
-		this.hash_code = hash_code;
+
+	public void setPasswordVersion(int passwordVersion) {
+		this.passwordVersion = passwordVersion;
 	}
-	@Override
-	public Map<String, Object> getColValMap(){
-		if(userID != 0) {
-		columnClassMap.put("userID", userID);
-		}
-		if(user_name != null) {
-		columnClassMap.put("user_name", user_name);
-		}
-		if(password != null) {
-		columnClassMap.put("password", password);
-		}
-		if(first_name != null) {
-		columnClassMap.put("first_name", first_name);
-		}
-		if(last_name != null) {
-		columnClassMap.put("last_name", last_name);
-		}
-		if(phone_number != null) {
-		columnClassMap.put("phone_number", phone_number);
-		}
-		if(dob != null) {
-		columnClassMap.put("dob", dob);
-		}
-		if(location != null) {
-		columnClassMap.put("location", location);
-		}
-		if(hash_code != null) {
-		columnClassMap.put("hash_code", hash_code);
-		}
+
+	public long getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(long createdAt) {
 		
+		this.createdAt = createdAt;
+	}
+
+	public long getModifiedAt() {
+		return modifiedAt;
+	}
+
+	public void setModifiedAt(long modifiedAt) {
+		this.modifiedAt = modifiedAt;
+	}
+
+	@Override
+	public Map<String, Object> getColValMap() {
+		if (userId != 0) {
+			columnClassMap.put("user_id", userId);
+		}
+		if (userName != null) {
+			columnClassMap.put("user_name", userName);
+		}
+		if (password != null) {
+			columnClassMap.put("password", password);
+		}
+		if (firstName != null) {
+			columnClassMap.put("first_name", firstName);
+		}
+		if (lastName != null) {
+			columnClassMap.put("last_name", lastName);
+		}
+		if (phoneNumber != null) {
+			columnClassMap.put("phone_number", phoneNumber);
+		}
+		if (dob != null) {
+			columnClassMap.put("dob", dob);
+		}
+		if (location != null) {
+			columnClassMap.put("location", location);
+		}
+		if (passwordVersion != null) {
+			columnClassMap.put("password_version", passwordVersion);
+		}
+		if (createdAt != null) {
+			columnClassMap.put("created_at", createdAt);
+		}
+		if (modifiedAt != null) {
+			columnClassMap.put("modified_at", modifiedAt);
+		}
 		return columnClassMap;
 	}
-	
-	
-	public Map<String, Object> getPrimaryKey(){
-    	Map<String, Object> primaryKey = new HashMap<>();
-    	System.out.println("userID from getPrimaryKey:"+ userID);
-    	if(userID != 0) {
-    		primaryKey.put("userID", userID);
-    	}
-    	return primaryKey;
-    }
-	
+
 }
